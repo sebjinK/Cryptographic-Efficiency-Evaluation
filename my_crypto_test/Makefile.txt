@@ -1,0 +1,40 @@
+# ───────────────── examples/my_crypto_test/Makefile ────────────────
+
+CONTIKI_PROJECT = my_crypto_test
+CONTIKI         = ../..
+CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
+
+# Source files (leave the folders exactly as they are)
+PROJECT_SOURCEFILES += \
+        tinyaes/aes.c \
+        present/present.c \
+        speck/speck.c \
+        ascon/ascon.c
+
+# -------------------------------------------------------------------
+#  Automatically create the object sub-folders before compilation
+# -------------------------------------------------------------------
+MAKE_NET     = nullnet
+MAKE_MAC     = nullmac
+MAKE_RDC     = nullrdc
+MAKE_FRAMER  = framer_nullmac
+MAKE_RADIO   = cc2420
+
+# 3) And make sure their .c files actually get compiled:
+MODULES_OVERRIDE += \
+  os/net/nullnet       \
+  os/net/mac/nullmac   \
+  os/net/mac/rdc/nullrdc \
+  os/net/mac/framer/nullframer
+
+OBJDIRS := $(addprefix build/sky/obj/,$(dir $(PROJECT_SOURCEFILES)))
+
+$(OBJDIRS):
+	@mkdir -p $@
+
+# Every object depends on its directory
+build/sky/obj/%.o: | $(OBJDIRS)
+
+# Pull in Contiki rules *after* the helper above
+include $(CONTIKI)/Makefile.include
+# ───────────────────────────────────────────────────────────────────
